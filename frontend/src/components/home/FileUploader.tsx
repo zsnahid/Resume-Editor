@@ -14,9 +14,10 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Alert, AlertDescription } from "../ui/alert";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router";
 
 interface UploadedFile {
   name: string;
@@ -25,6 +26,8 @@ interface UploadedFile {
 }
 
 export default function FileUploader() {
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [highlight, setHighlight] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -35,8 +38,8 @@ export default function FileUploader() {
       setError("Please upload a file first before proceeding to edit.");
       return;
     }
-    // Navigate to edit page (this would be handled by your routing system)
-    window.location.href = "/edit-resume";
+    // Navigate to edit page using React Router
+    void navigate("/edit-resume");
   }
 
   // This function handles file uploads that were uploaded using input
@@ -98,10 +101,6 @@ export default function FileUploader() {
     const files = event.dataTransfer.files;
     const file = files[0]; // Get the first file
 
-    if (!file) {
-      return;
-    }
-
     const fileType = file.type;
     const maxSizeInBytes = 10 * 1024 * 1024; // 10 MB
 
@@ -133,12 +132,9 @@ export default function FileUploader() {
   function handleRemoveFile() {
     setUploadedFile(null);
     setError(null);
-    // Reset file input - find the input in the current component
-    const fileInput = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement | null;
-    if (fileInput) {
-      fileInput.value = "";
+    // Reset file input using ref
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   }
 
@@ -217,6 +213,7 @@ export default function FileUploader() {
           </p>
           <small className="mb-6">Supported formats: PDF or DOCX</small>
           <Input
+            ref={fileInputRef}
             type="file"
             accept=".pdf, .docx"
             onChange={handleFileChange}
